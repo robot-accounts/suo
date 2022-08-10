@@ -72,6 +72,33 @@ suo.lock do |token|
 end
 ```
 
+### Raising an error when lock is not acquired
+
+Instead of failing silently, if the `fail_without_lock` option is passed it will be noisy about failing to acquire a lock
+
+```ruby
+suo = Suo::Client::Redis.new("foo", fail_without_lock: true)
+
+# Client 1
+suo.lock do |token|
+  5.times do
+    sleep 5
+    baz.bar!
+    suo.refresh(token)
+  end
+end
+
+# Client 2
+suo.lock do |token|
+  5.times do
+    baz.bar!
+    suo.refresh(token)
+  end
+end
+
+# Raises Suo::FailedLock
+```
+
 ### Time To Live
 
 ```ruby
